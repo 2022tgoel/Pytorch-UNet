@@ -3,6 +3,7 @@ import logging
 import sys
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,13 +13,14 @@ from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
 from utils.data_loading import BasicDataset, CarvanaDataset
+from custom import CustomDataset
 from utils.dice_score import dice_loss
 from evaluate import evaluate
 from unet import UNet
 
-dir_img = Path('./data/imgs/')
-dir_mask = Path('./data/masks/')
-dir_checkpoint = Path('./checkpoints/')
+img = '../unet/smaller/instance/imgs.npy'
+mask = '../unet/smaller/instance/masks.npy'
+dir_checkpoint = Path('../unet/smaller/instance/checkpoints/')
 
 
 def train_net(net,
@@ -30,11 +32,12 @@ def train_net(net,
               save_checkpoint: bool = True,
               img_scale: float = 0.5,
               amp: bool = False):
+    # 0. CUDA test
+    x = torch.tensor([0,1])
+    x.cuda()
+    
     # 1. Create dataset
-    try:
-        dataset = CarvanaDataset(dir_img, dir_mask, img_scale)
-    except (AssertionError, RuntimeError):
-        dataset = BasicDataset(dir_img, dir_mask, img_scale)
+    dataset = CustomDataset(np.load(img), np.load(mask))
 
     # 2. Split into train / validation partitions
     n_val = int(len(dataset) * val_percent)
