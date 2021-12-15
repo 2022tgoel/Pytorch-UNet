@@ -18,9 +18,9 @@ from utils.dice_score import dice_loss
 from evaluate import evaluate
 from unet import UNet
 
-img = '../unet/smaller/instance/imgs.npy'
-mask = '../unet/smaller/instance/masks.npy'
-dir_checkpoint = Path('../unet/smaller/instance/checkpoints/')
+img = '../train/img.npy'
+mask = '../train/mask.npy'
+dir_checkpoint = Path('../checkpoints/')
 
 
 def train_net(net,
@@ -33,8 +33,8 @@ def train_net(net,
               img_scale: float = 0.5,
               amp: bool = False):
     # 0. CUDA test
-    x = torch.tensor([0,1])
-    x.cuda()
+   # x = torch.tensor([0,1])
+   # x.cuda()
     
     # 1. Create dataset
     dataset = CustomDataset(np.load(img), np.load(mask))
@@ -90,7 +90,6 @@ def train_net(net,
 
                 images = images.to(device=device, dtype=torch.float32)
                 true_masks = true_masks.to(device=device, dtype=torch.long)
-
                 with torch.cuda.amp.autocast(enabled=amp):
                     masks_pred = net(images)
                     loss = criterion(masks_pred, true_masks) \
